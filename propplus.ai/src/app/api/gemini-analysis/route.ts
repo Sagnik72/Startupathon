@@ -15,7 +15,8 @@ export async function POST(req: NextRequest) {
 
     console.log('userCriteria:', userCriteria);
 
-    const geminiApiKey = "AIzaSyAg442ZWWTS5R5biAaua7rXP2gAkcR8RbY";
+    // Use env variable if set, otherwise fallback to the provided key (for immediate testing)
+    const geminiApiKey = process.env.GEMINI_API_KEY || "AIzaSyB8yCLrTAx1Nb7oh4YgTtT47TOW3wgOLIk";
     
     const prompt = `You are PropPulse AI, a commercial real estate underwriting platform. Analyze the following T12 (Trailing 12 Months) and Rent Roll data to provide accurate financial predictions and insights.
 
@@ -179,6 +180,8 @@ Provide accurate, realistic numbers based on the data provided. Focus on commerc
     });
 
     if (!geminiResponse.ok) {
+      const errorText = await geminiResponse.text();
+      console.error("Gemini API error:", geminiResponse.status, errorText, "API Key present:", !!geminiApiKey);
       throw new Error("Gemini API failed");
     }
 
