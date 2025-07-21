@@ -39,7 +39,7 @@ export default function Results() {
 
   // Parse user criteria from query params and map to explicit keys
   const selectedCriteriaArr = JSON.parse(searchParams.get('criteria') || '[]');
-  let userCriteria: any = {
+  const userCriteria: any = {
     minCoCReturn: undefined,
     capRateRange: undefined,
     yearBuiltThreshold: undefined,
@@ -82,22 +82,20 @@ export default function Results() {
         if (data?.user) setUser(data.user);
       });
     }
-  }, []);
+  }, [setUser]);
 
   // Clean up any uploaded files when entering this page
   useEffect(() => {
     // Clear any file upload state from previous pages
-    
-    // Fetch analysis data from API
     fetchAnalysisData();
-  }, []);
+  }, [fetchAnalysisData]);
 
   // When analysisData is available, call fetchGeminiAnalysis with userCriteria
   useEffect(() => {
     if (analysisData) {
       fetchGeminiAnalysis(analysisData, userCriteria);
     }
-  }, [analysisData]);
+  }, [analysisData, userCriteria, fetchGeminiAnalysis]);
 
   // Save analysis to history after analysis is available
   useEffect(() => {
