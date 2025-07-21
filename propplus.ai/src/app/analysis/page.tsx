@@ -189,7 +189,7 @@ export default function Analysis() {
                   <div className="space-y-3">
                     <p className="text-gray-300 text-sm mb-4">Upload PDF, Excel, or CSV file</p>
                     <input
-                      ref={el => fileInputRefs.current.t12 = el}
+                      ref={el => { fileInputRefs.current.t12 = el; }}
                       type="file"
                       accept=".pdf,.xlsx,.xls,.csv"
                       onChange={(e) => handleFileUpload('t12', e)}
@@ -239,7 +239,7 @@ export default function Analysis() {
                   <div className="space-y-3">
                     <p className="text-gray-300 text-sm mb-4">Upload PDF, Excel, or CSV file</p>
                     <input
-                      ref={el => fileInputRefs.current.rentRoll = el}
+                      ref={el => { fileInputRefs.current.rentRoll = el; }}
                       type="file"
                       accept=".pdf,.xlsx,.xls,.csv"
                       onChange={(e) => handleFileUpload('rentRoll', e)}
