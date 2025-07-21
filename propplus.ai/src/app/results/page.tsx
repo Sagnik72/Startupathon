@@ -84,6 +84,36 @@ export default function Results() {
     }
   }, [setUser]);
 
+  // Declare fetchAnalysisData before useEffect
+  const fetchAnalysisData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      // Get location from user input or use a dynamic source
+      const location = 'Los Angeles, CA'; // This should come from user input or previous step
+      const url = `/api/property-data?location=${encodeURIComponent(location)}`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      // Only use real data from API, no hardcoded fallbacks
+      if (!data || typeof data !== 'object') {
+        throw new Error('Invalid data structure received from API');
+      }
+      setAnalysisData(data);
+      // Analyze the deal
+      analyzeDeal(data);
+      // Fetch Gemini AI analysis
+      fetchGeminiAnalysis(data, userCriteria);
+    } catch (err) {
+      console.error('❌ Error fetching analysis data:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load analysis data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Clean up any uploaded files when entering this page
   useEffect(() => {
     // Clear any file upload state from previous pages
@@ -136,43 +166,6 @@ export default function Results() {
     };
     saveHistory();
   }, [analysisData, geminiAnalysis, user, historySaved]);
-
-  const fetchAnalysisData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Get location from user input or use a dynamic source
-      const location = 'Los Angeles, CA'; // This should come from user input or previous step
-      const url = `/api/property-data?location=${encodeURIComponent(location)}`;
-      
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      // Only use real data from API, no hardcoded fallbacks
-      if (!data || typeof data !== 'object') {
-        throw new Error('Invalid data structure received from API');
-      }
-      
-      setAnalysisData(data);
-      
-      // Analyze the deal
-      analyzeDeal(data);
-      
-      // Fetch Gemini AI analysis
-      fetchGeminiAnalysis(data, userCriteria);
-    } catch (err) {
-      console.error('❌ Error fetching analysis data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load analysis data. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchGeminiAnalysis = async (propertyData: any, userCriteria: any) => {
     try {
