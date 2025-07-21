@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
   BuildingOfficeIcon, 
@@ -24,7 +24,16 @@ import {
 } from '@heroicons/react/24/outline';
 import { supabase } from '@/utils/supabaseClient';
 
-export default function Results() {
+// Wrapper for Suspense boundary
+export default function ResultsPageWrapper() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Results />
+    </Suspense>
+  );
+}
+
+function Results() {
   const [currentStep, setCurrentStep] = useState(5); // Results step
   const [analysisData, setAnalysisData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
