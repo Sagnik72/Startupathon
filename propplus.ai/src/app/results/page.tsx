@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense, useCallback } from 'react';
+import { useState, useEffect, Suspense, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
   BuildingOfficeIcon, 
@@ -48,41 +48,43 @@ function Results() {
 
   // Parse user criteria from query params and map to explicit keys
   const selectedCriteriaArr = JSON.parse(searchParams.get('criteria') || '[]');
-  const userCriteria: any = {
-    minCoCReturn: undefined,
-    capRateRange: undefined,
-    yearBuiltThreshold: undefined,
-    holdPeriod: undefined,
-    minDSCR: undefined,
-    marketConditions: undefined,
-    propertyCondition: undefined
-  };
-  selectedCriteriaArr.forEach((c: string) => {
-    if (c.toLowerCase().includes('cash-on-cash')) {
-      const match = c.match(/([\d.]+)%/);
-      if (match) userCriteria.minCoCReturn = parseFloat(match[1]);
-    } else if (c.toLowerCase().includes('cap rate')) {
-      const match = c.match(/([\d.]+)%/g);
-      if (match && match.length === 2) userCriteria.capRateRange = match.join('-');
-      else if (match && match.length === 1) userCriteria.capRateRange = match[0];
-    } else if (c.toLowerCase().includes('year built')) {
-      const match = c.match(/(\d{4})/);
-      if (match) userCriteria.yearBuiltThreshold = match[1];
-    } else if (c.toLowerCase().includes('hold') || c.toLowerCase().includes('timeframe')) {
-      const match = c.match(/(\d+-?\d*)/);
-      if (match) userCriteria.holdPeriod = match[1];
-    } else if (c.toLowerCase().includes('dscr')) {
-      const match = c.match(/([\d.]+)/);
-      if (match) userCriteria.minDSCR = match[1];
-    } else if (c.toLowerCase().includes('market')) {
-      userCriteria.marketConditions = c.split(':')[1]?.trim() || c;
-    } else if (c.toLowerCase().includes('property condition')) {
-      userCriteria.propertyCondition = c.split(':')[1]?.trim() || c;
-    }
-  });
-  // Optionally add investmentAmount and timeframe
-  userCriteria.investmentAmount = searchParams.get('investmentAmount') || '';
-  userCriteria.timeframe = searchParams.get('timeframe') || '';
+  const userCriteria = useMemo(() => {
+    const criteria: any = {
+      minCoCReturn: undefined,
+      capRateRange: undefined,
+      yearBuiltThreshold: undefined,
+      holdPeriod: undefined,
+      minDSCR: undefined,
+      marketConditions: undefined,
+      propertyCondition: undefined
+    };
+    selectedCriteriaArr.forEach((c: string) => {
+      if (c.toLowerCase().includes('cash-on-cash')) {
+        const match = c.match(/([\d.]+)%/);
+        if (match) criteria.minCoCReturn = parseFloat(match[1]);
+      } else if (c.toLowerCase().includes('cap rate')) {
+        const match = c.match(/([\d.]+)%/g);
+        if (match && match.length === 2) criteria.capRateRange = match.join('-');
+        else if (match && match.length === 1) criteria.capRateRange = match[0];
+      } else if (c.toLowerCase().includes('year built')) {
+        const match = c.match(/(\d{4})/);
+        if (match) criteria.yearBuiltThreshold = match[1];
+      } else if (c.toLowerCase().includes('hold') || c.toLowerCase().includes('timeframe')) {
+        const match = c.match(/(\d+-?\d*)/);
+        if (match) criteria.holdPeriod = match[1];
+      } else if (c.toLowerCase().includes('dscr')) {
+        const match = c.match(/([\d.]+)/);
+        if (match) criteria.minDSCR = match[1];
+      } else if (c.toLowerCase().includes('market')) {
+        criteria.marketConditions = c.split(':')[1]?.trim() || c;
+      } else if (c.toLowerCase().includes('property condition')) {
+        criteria.propertyCondition = c.split(':')[1]?.trim() || c;
+      }
+    });
+    criteria.investmentAmount = searchParams.get('investmentAmount') || '';
+    criteria.timeframe = searchParams.get('timeframe') || '';
+    return criteria;
+  }, [selectedCriteriaArr, searchParams]);
 
   // Fetch user for Supabase
   useEffect(() => {
@@ -150,7 +152,7 @@ function Results() {
     } catch (error) {
       console.error('Error fetching Gemini analysis:', error);
     }
-  }, []);
+  }, [userCriteria]);
 
   // Memoize fetchAnalysisData
   const fetchAnalysisData = useCallback(async () => {
