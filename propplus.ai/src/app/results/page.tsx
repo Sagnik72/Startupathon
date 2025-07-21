@@ -120,6 +120,65 @@ export default function Results() {
     fetchAnalysisData();
   }, [fetchAnalysisData]);
 
+  // Declare fetchGeminiAnalysis before useEffect
+  const fetchGeminiAnalysis = async (propertyData: any, userCriteria: any) => {
+    try {
+      // Sample T12 and Rent Roll data for demonstration
+      const t12Data = {
+        grossRent: 312000,
+        expenses: 124800,
+        noi: 187200,
+        vacancy: 4,
+        management: 15600,
+        maintenance: 31200,
+        utilities: 15600,
+        insurance: 7800,
+        propertyTax: 15600,
+        otherExpenses: 31200
+      };
+      const rentRollData = {
+        totalUnits: 24,
+        occupiedUnits: 23,
+        averageRent: 1300,
+        rentGrowth: 4.2,
+        leaseExpirations: [
+          { unit: "1A", expiration: "2024-06-15", currentRent: 1250 },
+          { unit: "2B", expiration: "2024-08-20", currentRent: 1350 },
+          { unit: "3C", expiration: "2024-09-10", currentRent: 1200 }
+        ]
+      };
+      const propertyInfo = {
+        address: "123 Main Street, Los Angeles, CA",
+        propertyType: "Multifamily",
+        yearBuilt: 1998,
+        squareFootage: 24000,
+        purchasePrice: 2850000,
+        downPayment: 855000,
+        loanAmount: 1995000,
+        interestRate: 5.5
+      };
+      // Pass userCriteria to the backend
+      const response = await fetch('/api/gemini-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          t12Data,
+          rentRollData,
+          propertyInfo,
+          userCriteria
+        })
+      });
+      if (response.ok) {
+        const geminiData = await response.json();
+        setGeminiAnalysis(geminiData);
+      }
+    } catch (error) {
+      console.error('Error fetching Gemini analysis:', error);
+    }
+  };
+
   // When analysisData is available, call fetchGeminiAnalysis with userCriteria
   useEffect(() => {
     if (analysisData) {
@@ -166,68 +225,6 @@ export default function Results() {
     };
     saveHistory();
   }, [analysisData, geminiAnalysis, user, historySaved]);
-
-  const fetchGeminiAnalysis = async (propertyData: any, userCriteria: any) => {
-    try {
-      // Sample T12 and Rent Roll data for demonstration
-      const t12Data = {
-        grossRent: 312000,
-        expenses: 124800,
-        noi: 187200,
-        vacancy: 4,
-        management: 15600,
-        maintenance: 31200,
-        utilities: 15600,
-        insurance: 7800,
-        propertyTax: 15600,
-        otherExpenses: 31200
-      };
-
-      const rentRollData = {
-        totalUnits: 24,
-        occupiedUnits: 23,
-        averageRent: 1300,
-        rentGrowth: 4.2,
-        leaseExpirations: [
-          { unit: "1A", expiration: "2024-06-15", currentRent: 1250 },
-          { unit: "2B", expiration: "2024-08-20", currentRent: 1350 },
-          { unit: "3C", expiration: "2024-09-10", currentRent: 1200 }
-        ]
-      };
-
-      const propertyInfo = {
-        address: "123 Main Street, Los Angeles, CA",
-        propertyType: "Multifamily",
-        yearBuilt: 1998,
-        squareFootage: 24000,
-        purchasePrice: 2850000,
-        downPayment: 855000,
-        loanAmount: 1995000,
-        interestRate: 5.5
-      };
-
-      // Pass userCriteria to the backend
-      const response = await fetch('/api/gemini-analysis', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          t12Data,
-          rentRollData,
-          propertyInfo,
-          userCriteria
-        })
-      });
-
-      if (response.ok) {
-        const geminiData = await response.json();
-        setGeminiAnalysis(geminiData);
-      }
-    } catch (error) {
-      console.error('Error fetching Gemini analysis:', error);
-    }
-  };
 
   const analyzeDeal = (data: any) => {
     if (!data) {
