@@ -207,13 +207,23 @@ ${timestamp}
     let yPos = 200;
     
     ctx.fillStyle = '#ffffff';
-    ctx.fillText(`Units: ${propertyData.units || 'N/A'}`, 100, yPos);
-    yPos += 40;
-    ctx.fillText(`Square Footage: ${propertyData.squareFootage || 'N/A'}`, 100, yPos);
-    yPos += 40;
-    ctx.fillText(`Build Year: ${propertyData.buildYear || 'N/A'}`, 100, yPos);
-    yPos += 40;
-    ctx.fillText(`Walk Score: ${propertyData.walkScore || 'N/A'}`, 100, yPos);
+    if (propertyData) {
+      ctx.fillText(`Units: ${propertyData.units || 'N/A'}`, 100, yPos);
+      yPos += 40;
+      ctx.fillText(`Square Footage: ${propertyData.squareFootage || 'N/A'}`, 100, yPos);
+      yPos += 40;
+      ctx.fillText(`Build Year: ${propertyData.buildYear || 'N/A'}`, 100, yPos);
+      yPos += 40;
+      ctx.fillText(`Walk Score: ${propertyData.walkScore || 'N/A'}`, 100, yPos);
+    } else {
+      ctx.fillText('Units: N/A', 100, yPos);
+      yPos += 40;
+      ctx.fillText('Square Footage: N/A', 100, yPos);
+      yPos += 40;
+      ctx.fillText('Build Year: N/A', 100, yPos);
+      yPos += 40;
+      ctx.fillText('Walk Score: N/A', 100, yPos);
+    }
 
     // Add location
     ctx.fillStyle = '#e5e7eb';
