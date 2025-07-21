@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
   BuildingOfficeIcon, 
@@ -93,44 +93,8 @@ function Results() {
     }
   }, [setUser]);
 
-  // Declare fetchAnalysisData before useEffect
-  const fetchAnalysisData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      // Get location from user input or use a dynamic source
-      const location = 'Los Angeles, CA'; // This should come from user input or previous step
-      const url = `/api/property-data?location=${encodeURIComponent(location)}`;
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      // Only use real data from API, no hardcoded fallbacks
-      if (!data || typeof data !== 'object') {
-        throw new Error('Invalid data structure received from API');
-      }
-      setAnalysisData(data);
-      // Analyze the deal
-      analyzeDeal(data);
-      // Fetch Gemini AI analysis
-      fetchGeminiAnalysis(data, userCriteria);
-    } catch (err) {
-      console.error('❌ Error fetching analysis data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load analysis data. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Clean up any uploaded files when entering this page
-  useEffect(() => {
-    // Clear any file upload state from previous pages
-    fetchAnalysisData();
-  }, [fetchAnalysisData]);
-
-  // Declare fetchGeminiAnalysis before useEffect
-  const fetchGeminiAnalysis = async (propertyData: any, userCriteria: any) => {
+  // Memoize fetchGeminiAnalysis
+  const fetchGeminiAnalysis = useCallback(async (propertyData: any, userCriteria: any) => {
     try {
       // Sample T12 and Rent Roll data for demonstration
       const t12Data = {
@@ -186,14 +150,42 @@ function Results() {
     } catch (error) {
       console.error('Error fetching Gemini analysis:', error);
     }
-  };
+  }, []);
 
-  // When analysisData is available, call fetchGeminiAnalysis with userCriteria
-  useEffect(() => {
-    if (analysisData) {
-      fetchGeminiAnalysis(analysisData, userCriteria);
+  // Memoize fetchAnalysisData
+  const fetchAnalysisData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      // Get location from user input or use a dynamic source
+      const location = 'Los Angeles, CA'; // This should come from user input or previous step
+      const url = `/api/property-data?location=${encodeURIComponent(location)}`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      // Only use real data from API, no hardcoded fallbacks
+      if (!data || typeof data !== 'object') {
+        throw new Error('Invalid data structure received from API');
+      }
+      setAnalysisData(data);
+      // Analyze the deal
+      analyzeDeal(data);
+      // Fetch Gemini AI analysis
+      fetchGeminiAnalysis(data, userCriteria);
+    } catch (err) {
+      console.error('❌ Error fetching analysis data:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load analysis data. Please try again.');
+    } finally {
+      setLoading(false);
     }
-  }, [analysisData, userCriteria, fetchGeminiAnalysis]);
+  }, [fetchGeminiAnalysis, userCriteria]);
+
+  // Clean up any uploaded files when entering this page
+  useEffect(() => {
+    fetchAnalysisData();
+  }, [fetchAnalysisData]);
 
   // Save analysis to history after analysis is available
   useEffect(() => {
